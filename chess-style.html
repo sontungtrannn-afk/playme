@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Son Tung — Play Style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#F1EEE7; --tile:#FCFBF8; --ink:#1B1A17; --ink-2:#57544E; --muted:#908C83;
+    --line:#E7E2D8; --line-2:#D8D1C4; --accent:#C2603C; --accent-ink:#A24A29;
+    --paper:#EFE7D8; --c-blue:#3E5B86; --c-green:#4C6B3C; --c-lilac:#6A5494;
+    --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .label{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+  .topbar{position:sticky;top:0;z-index:50;backdrop-filter:saturate(140%) blur(10px);background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid var(--line)}
+  .topbar__in{max-width:1080px;margin:0 auto;padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between}
+  .back{font-family:var(--mono);font-weight:600;font-size:13px;display:flex;align-items:center;gap:7px}
+  .back:hover{color:var(--accent)} .back .star{color:var(--accent)}
+  .topbar__meta{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .page{max-width:1080px;margin:0 auto;padding:40px 24px 72px}
+  .hero{margin-bottom:40px;max-width:760px}
+  .hero h1{font-size:clamp(30px,4vw,44px);font-weight:600;letter-spacing:-.03em;line-height:1.1;margin:14px 0 16px}
+  .hero p{font-size:17px;line-height:1.6;color:var(--ink-2)}
+  .hero .em{color:var(--accent-ink);font-weight:600}
+  h2{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:44px 0 16px;display:flex;align-items:center;gap:10px}
+  h2::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* toggle */
+  .toggle{display:inline-flex;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;margin-bottom:20px}
+  .toggle button{padding:9px 16px;background:var(--tile);font-family:var(--mono);font-size:12px;border:0;cursor:pointer;color:var(--ink-2);border-left:1px solid var(--line)}
+  .toggle button:first-child{border-left:0}
+  .toggle button.on{background:var(--ink);color:var(--bg)}
+
+  /* heat grid of pieces */
+  .pieces{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:760px){.pieces{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.pieces{grid-template-columns:1fr}}
+  .pcard{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .pcard .ph{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+  .pcard .glyph{width:22px;height:22px;object-fit:contain}
+  .pcard .pname{font-weight:600;font-size:15px}
+  .pcard .pins{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px;min-height:14px}
+  .hb{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--line-2);background:var(--line-2);gap:1px}
+  .hc{background:var(--paper);position:relative}
+  .hc::after{content:"";position:absolute;inset:0;background:var(--accent);opacity:var(--a,0)}
+
+  /* fingerprint stat callouts */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .stat .big{font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent-ink)}
+  .stat .cap{font-weight:600;font-size:14px;margin:2px 0 10px}
+  .stat .sub{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.5}
+  .bar{height:6px;border-radius:3px;background:var(--line);margin:3px 0;position:relative;overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+  .bar.you i{background:var(--accent)} .bar.gen i{background:var(--muted)}
+
+  /* model verdict */
+  .verdict{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.verdict{grid-template-columns:1fr}}
+  .vcol{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .vcol h3{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px}
+  .vcol.caught h3{color:var(--c-green)} .vcol.missed h3{color:var(--accent-ink)}
+  .vcol ul{list-style:none;font-size:13px;line-height:1.5;color:var(--ink-2)}
+  .vcol li{padding:5px 0;border-top:1px solid var(--line);display:flex;gap:8px}
+  .vcol li:first-child{border-top:0}
+  .vnote{font-size:14px;color:var(--ink-2);margin-top:14px;line-height:1.6}
+</style>
+</head>
+<body>
+  <header class="topbar"><div class="topbar__in">
+    <a class="back" href="chess.html"><span>←</span> Play me <span class="star">✦</span></a>
+    <span class="topbar__meta" id="meta">play style</span>
+  </div></header>
+
+  <div class="page">
+    <div class="hero">
+      <span class="label">Read from my real games</span>
+      <h1>How I actually play.</h1>
+      <p>A fingerprint pulled from <b id="sampleN">—</b> of my rapid &amp; blitz games: a patient, piece-led
+      1.e4 player who keeps the king safe and stays out of needless trades — then <span class="em">strikes with a
+      sacrifice</span>, and grinds a mean endgame with an active king.</p>
+    </div>
+
+    <h2>Where my pieces live</h2>
+    <div class="toggle" id="toggle">
+      <button data-col="you" class="on">Me</button>
+      <button data-col="your_model">My bot</button>
+      <button data-col="base_maia">Generic 1900</button>
+    </div>
+    <div class="pieces" id="pieces"></div>
+
+    <h2>My fingerprint <span style="font-family:var(--sans);text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:12px">vs a generic 1900</span></h2>
+    <div class="stats" id="stats"></div>
+
+    <h2>Does my bot play like me?</h2>
+    <div class="verdict" id="verdict"></div>
+    <p class="vnote" id="vnote"></p>
+  </div>
+
+  <script type="module">
+    const D = await fetch('./chess/style_profile.json').then(r => r.json());
+    document.getElementById('sampleN').textContent = D.meta.positions.toLocaleString() + ' positions';
+    document.getElementById('meta').textContent = 'play style · ' + D.meta.positions.toLocaleString() + ' positions';
+
+    const PIECES = [
+      ['P','♟','Pawns','Classic center: e4 & d4'],
+      ['N','♞','Knights','f3 / c3, then the e5 outpost'],
+      ['B','♝','Bishops','Active: c4, b5, g5 pins'],
+      ['R','♜','Rooks','Seize the e-file'],
+      ['Q','♛','Queen','Modest, leans kingside'],
+      ['K','♚','King','Short castle, active in endings'],
+    ];
+    const piecesEl = document.getElementById('pieces');
+    function renderHeat(col){
+      piecesEl.innerHTML = PIECES.map(([k,g,name,ins])=>{
+        const arr = (D[col].heat && D[col].heat[k]) || new Array(64).fill(0);
+        const max = Math.max(...arr, 1);
+        let cells = '';
+        for(let r=7;r>=0;r--) for(let f=0;f<8;f++){
+          cells += `<div class="hc" style="--a:${(arr[r*8+f]/max).toFixed(3)}"></div>`;
+        }
+        return `<div class="pcard"><div class="ph"><img class="glyph" src="chess/pieces/b${k}.svg" alt=""><span class="pname">${name}</span></div>
+          <div class="pins">${col==='you'?ins:''}</div><div class="hb">${cells}</div></div>`;
+      }).join('');
+    }
+    document.getElementById('toggle').addEventListener('click', e=>{
+      const b = e.target.closest('button'); if(!b) return;
+      [...e.currentTarget.children].forEach(x=>x.classList.toggle('on', x===b));
+      renderHeat(b.dataset.col);
+    });
+    renderHeat('you');
+
+    // fingerprint stat callouts (you vs generic)
+    const Y = D.you, G = D.base_maia;
+    const ratio = (a,b)=> (a/b).toFixed(1)+'×';
+    const stats = [
+      { big: ratio(Y.pct_sacrifice, G.pct_sacrifice), cap:'More sacrifices', you:Y.pct_sacrifice, gen:G.pct_sacrifice, max:1.0, unit:'%', sub:`you ${Y.pct_sacrifice}% of moves vs ${G.pct_sacrifice}% for a generic 1900` },
+      { big: `${Y.pct_capture}%`, cap:'Patient — fewer trades', you:Y.pct_capture, gen:G.pct_capture, max:30, unit:'%', sub:`you trade on ${Y.pct_capture}% of moves vs ${G.pct_capture}% — you don't trade for its own sake` },
+      { big: `${Y.piece_share.K}%`, cap:'Active king', you:Y.piece_share.K, gen:G.piece_share.K, max:16, unit:'%', sub:`${Y.piece_share.K}% of your moves are king moves vs ${G.piece_share.K}% — endgame technique` },
+      { big: `${Y.castle_side['kingside%']}%`, cap:'Castles short', you:Y.castle_side['kingside%'], gen:G.castle_side['kingside%'], max:100, unit:'%', sub:`you castle kingside ${Y.castle_side['kingside%']}% of the time` },
+    ];
+    document.getElementById('stats').innerHTML = stats.map(s=>`
+      <div class="stat"><div class="big">${s.big}</div><div class="cap">${s.cap}</div>
+        <div class="bar you"><i style="width:${Math.min(100,100*s.you/s.max)}%"></i></div>
+        <div class="bar gen"><i style="width:${Math.min(100,100*s.gen/s.max)}%"></i></div>
+        <div class="sub">${s.sub}</div></div>`).join('');
+
+    // model verdict
+    const M = D.your_model;
+    const caught = [
+      `Active queen — ${M.piece_share.Q}% (you ${Y.piece_share.Q}, generic ${G.piece_share.Q})`,
+      `Active king — ${M.piece_share.K}% (you ${Y.piece_share.K}, generic ${G.piece_share.K})`,
+      `Leans to sacrifices — ${M.pct_sacrifice}% (generic only ${G.pct_sacrifice}%)`,
+      `Castles short like you (${M.castle_side['kingside%']}% kingside)`,
+    ];
+    const missed = [
+      `Still trades like generic — ${M.pct_capture}% (you ${Y.pct_capture}%)`,
+      `Checks more than you — ${M.pct_check}% (you ${Y.pct_check}%)`,
+      `As forward as generic — ${M.pct_enemy_half}% into enemy half (you ${Y.pct_enemy_half}%)`,
+    ];
+    document.getElementById('verdict').innerHTML = `
+      <div class="vcol caught"><h3>✓ Caught my style</h3><ul>${caught.map(t=>`<li>✅ ${t}</li>`).join('')}</ul></div>
+      <div class="vcol missed"><h3>✗ Still generic</h3><ul>${missed.map(t=>`<li>⚠️ ${t}</li>`).join('')}</ul></div>`;
+    document.getElementById('vnote').innerHTML = `My fine-tuned bot caught <b>which pieces I favour</b> and my <b>sacrifice instinct</b> — but not my <b>positional restraint</b> (it still trades and pushes like a generic 1900). Honest for a light, +4-point personalization; more games would pull the rest toward me.`;
+  </script>
+</body>
+</html>
