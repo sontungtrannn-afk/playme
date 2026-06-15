@@ -127,14 +127,14 @@
     <section class="sec">
       <div class="sechead">
         <span class="secnum">01</span>
-        <div><h2>Openings</h2><div class="secsub">Classical 1.e4 · Caro-Kann specialist</div></div>
+        <div><h2>Openings</h2><div class="secsub">1.e4 gambiteer · Caro-Kann specialist</div></div>
       </div>
-      <p class="lead">I've played <b>1.e4</b> almost my whole life. As Black my real weapon is the
-      <span class="hl">Caro-Kann — my single best opening at 61%</span>, with 1…e5 as the steady alternative; against
-      1.d4 I'm solid with 1…d5. I punish the offbeat tries hardest — I score 57–58% against the Sicilian and
-      Scandinavian — but it evens out in the main open games.</p>
+      <p class="lead">I've played <b>1.e4</b> almost my whole life — and at heart I'm a gambiteer. As Black the
+      <span class="hl">Caro-Kann is my rock (61%)</span>, but my real signature is the offbeat <b>Elephant Gambit</b> —
+      320 games of throwing a pawn at move two. Against 1.d4 I hit back with the sharp <b>Austrian Defense</b>, and as
+      White I meet the Sicilian head-on with the <b>Smith-Morra Gambit</b>. I'd rather make chaos than shuffle pieces.</p>
 
-      <div class="sublabel" style="margin-top:0">My main openings</div>
+      <div class="sublabel" style="margin-top:0">My signature openings</div>
       <div class="ominis" id="ominis"></div>
 
       <div class="cols">
@@ -235,24 +235,24 @@
     document.getElementById('end-heat').innerHTML = card('K','King','short castle, then active in endings');
 
     // mini opening boards (FEN piece-placement → 8×8)
-    const OPENINGS = [
-      ['King’s Knight', '1.e4 e5 2.Nf3', 'rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R'],
-      ['Caro-Kann', '1.e4 c6 2.d4 d5 · <b>61% as Black</b>', 'rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR'],
-      ['Italian Game', '1.e4 e5 2.Nf3 Nc6 3.Bc4', 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R'],
-      ['Queen’s Pawn', '1.d4 d5 · solid', 'rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR'],
+    const OPENINGS = [   // [name, caption, FEN, flipToBlack]
+      ['Caro-Kann', '1.e4 c6 · <b>61%</b> as Black · 236 games', 'rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR', true],
+      ['Elephant Gambit', '1.e4 e5 2.Nf3 d5 · <b>54%</b> as Black · 320 games', 'rnbqkbnr/ppp2ppp/8/3pp3/4P3/5N2/PPPP1PPP/RNBQKB1R', true],
+      ['Austrian Defense', '1.d4 d5 2.c4 c5 · <b>54%</b> as Black · 85 games', 'rnbqkbnr/pp2pppp/8/2pp4/2PP4/8/PP2PPPP/RNBQKBNR', true],
+      ['Smith-Morra Gambit', '1.e4 c5 2.d4 · <b>57%</b> as White · 283 games', 'rnbqkbnr/pp1ppppp/8/2p5/3PP3/8/PPP2PPP/RNBQKBNR', false],
     ];
-    function miniBoard(p){
-      const rows = p.split('/'); let cells = '';
+    function miniBoard(p, flip){
+      const rows = p.split('/'); const cells = [];
       rows.forEach((row, ri) => { let fi = 0;
         for(const ch of row){
-          if(ch>='1' && ch<='8'){ for(let k=0;k<+ch;k++){ cells += `<div class="oc ${(ri+fi)%2?'d':'l'}"></div>`; fi++; } }
-          else { const col = ch===ch.toUpperCase()?'w':'b'; cells += `<div class="oc ${(ri+fi)%2?'d':'l'}"><img src="chess/pieces/${col}${ch.toUpperCase()}.svg" alt=""></div>`; fi++; }
+          if(ch>='1' && ch<='8'){ for(let k=0;k<+ch;k++){ cells.push(`<div class="oc ${(ri+fi)%2?'d':'l'}"></div>`); fi++; } }
+          else { const col = ch===ch.toUpperCase()?'w':'b'; cells.push(`<div class="oc ${(ri+fi)%2?'d':'l'}"><img src="chess/pieces/${col}${ch.toUpperCase()}.svg" alt=""></div>`); fi++; }
         }
       });
-      return cells;
+      return (flip ? cells.reverse() : cells).join('');   // 180° flip → Black's perspective
     }
-    document.getElementById('ominis').innerHTML = OPENINGS.map(([name,moves,fen]) =>
-      `<div class="obcard"><div class="omini">${miniBoard(fen)}</div><div class="oname">${name}</div><div class="omoves">${moves}</div></div>`).join('');
+    document.getElementById('ominis').innerHTML = OPENINGS.map(([name,moves,fen,flip]) =>
+      `<div class="obcard"><div class="omini">${miniBoard(fen,flip)}</div><div class="oname">${name}</div><div class="omoves">${moves}</div></div>`).join('');
   </script>
 </body>
 </html>
