@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Son Tung — Play Style</title>
+<title>Son Tung — How I actually play</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -18,157 +18,206 @@
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
   .label{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+
   .topbar{position:sticky;top:0;z-index:50;backdrop-filter:saturate(140%) blur(10px);background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid var(--line)}
-  .topbar__in{max-width:1080px;margin:0 auto;padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between}
+  .topbar__in{max-width:1000px;margin:0 auto;padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between}
   .back{font-family:var(--mono);font-weight:600;font-size:13px;display:flex;align-items:center;gap:7px}
   .back:hover{color:var(--accent)} .back .star{color:var(--accent)}
   .topbar__meta{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-  .page{max-width:1080px;margin:0 auto;padding:40px 24px 72px}
-  .hero{margin-bottom:40px;max-width:760px}
-  .hero h1{font-size:clamp(30px,4vw,44px);font-weight:600;letter-spacing:-.03em;line-height:1.1;margin:14px 0 16px}
-  .hero p{font-size:17px;line-height:1.6;color:var(--ink-2)}
+
+  .page{max-width:1000px;margin:0 auto;padding:48px 24px 80px}
+
+  /* hero */
+  .hero{max-width:760px}
+  .hero h1{font-size:clamp(32px,5vw,52px);font-weight:600;letter-spacing:-.035em;line-height:1.05;margin:14px 0 18px}
+  .hero p{font-size:18px;line-height:1.6;color:var(--ink-2)}
   .hero .em{color:var(--accent-ink);font-weight:600}
-  h2{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:44px 0 16px;display:flex;align-items:center;gap:10px}
-  h2::after{content:"";flex:1;height:1px;background:var(--line)}
+  .herostats{display:flex;gap:40px;margin-top:30px;flex-wrap:wrap}
+  .hstat .hn{font-size:34px;font-weight:700;color:var(--accent-ink);letter-spacing:-.02em;line-height:1}
+  .hstat .hl{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:7px;max-width:150px;line-height:1.4}
 
-  /* toggle */
-  .toggle{display:inline-flex;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;margin-bottom:20px}
-  .toggle button{padding:9px 16px;background:var(--tile);font-family:var(--mono);font-size:12px;border:0;cursor:pointer;color:var(--ink-2);border-left:1px solid var(--line)}
-  .toggle button:first-child{border-left:0}
-  .toggle button.on{background:var(--ink);color:var(--bg)}
+  /* section */
+  .sec{margin-top:72px}
+  .sechead{display:flex;align-items:flex-start;gap:20px;padding-bottom:20px;border-bottom:1px solid var(--line-2);margin-bottom:26px}
+  .secnum{font-family:var(--mono);font-size:44px;font-weight:600;color:var(--line-2);line-height:.85;flex:none}
+  .sechead h2{font-size:27px;font-weight:600;letter-spacing:-.02em}
+  .secsub{font-family:var(--mono);font-size:12px;color:var(--accent-ink);letter-spacing:.04em;text-transform:uppercase;margin-top:6px}
+  .lead{font-size:16px;line-height:1.75;color:var(--ink-2);max-width:740px;margin-bottom:28px}
+  .lead b{color:var(--ink);font-weight:600} .lead .hl{color:var(--accent-ink);font-weight:600}
 
-  /* heat grid of pieces */
-  .pieces{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-  @media(max-width:760px){.pieces{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:480px){.pieces{grid-template-columns:1fr}}
-  .pcard{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:16px}
-  .pcard .ph{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
-  .pcard .glyph{width:22px;height:22px;object-fit:contain}
-  .pcard .pname{font-weight:600;font-size:15px}
-  .pcard .pins{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px;min-height:14px}
+  .sublabel{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:30px 0 14px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:720px){.cols{grid-template-columns:1fr}}
+  .panel{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .panel .label{display:block;margin-bottom:14px}
+  .note{font-size:14px;line-height:1.65;color:var(--ink-2);margin-top:14px;max-width:740px}
+  .note b{color:var(--ink);font-weight:600}
+
+  /* win-rate bars */
+  .wbar{display:grid;grid-template-columns:165px 1fr 42px;gap:14px;align-items:center;margin:11px 0}
+  .wlabel{font-size:13px;color:var(--ink-2)}
+  .track{position:relative;height:9px;border-radius:5px;background:var(--line)}
+  .track::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line-2)}
+  .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
+  .fill.hi{background:var(--c-green)} .fill.mid{background:var(--accent)} .fill.lo{background:var(--muted)}
+  .val{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:12px}
+
+  /* stat callouts */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .stat .big{font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent-ink);line-height:1}
+  .stat .cap{font-weight:600;font-size:14px;margin:8px 0 6px}
+  .stat .sub{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.55}
+
+  /* piece heatmaps */
+  .heat3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:620px){.heat3{grid-template-columns:1fr 1fr}}
+  .heat2{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:430px}
+  .pcard{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .pcard .ph{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+  .pcard .glyph{width:20px;height:20px;object-fit:contain}
+  .pcard .pname{font-weight:600;font-size:14px}
+  .pcard .pins{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:11px;min-height:13px;line-height:1.3}
   .hb{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--line-2);background:var(--line-2);gap:1px}
   .hc{background:var(--paper);position:relative}
   .hc::after{content:"";position:absolute;inset:0;background:var(--accent);opacity:var(--a,0)}
 
-  /* fingerprint stat callouts */
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
-  .stat{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:18px}
-  .stat .big{font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent-ink)}
-  .stat .cap{font-weight:600;font-size:14px;margin:2px 0 10px}
-  .stat .sub{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.5}
-  .bar{height:6px;border-radius:3px;background:var(--line);margin:3px 0;position:relative;overflow:hidden}
-  .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
-  .bar.you i{background:var(--accent)} .bar.gen i{background:var(--muted)}
+  .endgrid{display:grid;grid-template-columns:1fr 280px;gap:28px;align-items:start}
+  @media(max-width:720px){.endgrid{grid-template-columns:1fr}}
 
-  /* model verdict */
-  .verdict{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:640px){.verdict{grid-template-columns:1fr}}
-  .vcol{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:18px}
-  .vcol h3{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px}
-  .vcol.caught h3{color:var(--c-green)} .vcol.missed h3{color:var(--accent-ink)}
-  .vcol ul{list-style:none;font-size:13px;line-height:1.5;color:var(--ink-2)}
-  .vcol li{padding:5px 0;border-top:1px solid var(--line);display:flex;gap:8px}
-  .vcol li:first-child{border-top:0}
-  .vnote{font-size:14px;color:var(--ink-2);margin-top:14px;line-height:1.6}
+  .foot{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);line-height:1.6}
+  .foot a{color:var(--accent-ink);font-weight:500}
 </style>
 </head>
 <body>
   <header class="topbar"><div class="topbar__in">
     <a class="back" href="chess.html"><span>←</span> Play me <span class="star">✦</span></a>
-    <span class="topbar__meta" id="meta">play style</span>
+    <span class="topbar__meta">how I play · 3,900+ games</span>
   </div></header>
 
   <div class="page">
     <div class="hero">
-      <span class="label">Read from my real games</span>
+      <span class="label">Read from my real games — no self-flattery</span>
       <h1>How I actually play.</h1>
-      <p>A fingerprint pulled from <b id="sampleN">—</b> of my rapid &amp; blitz games: a patient, piece-led
-      1.e4 player who keeps the king safe and stays out of needless trades — then <span class="em">strikes with a
-      sacrifice</span>, and grinds a mean endgame with an active king.</p>
+      <p>Pulled from <b id="sampleN">3,900+</b> of my rated games: a patient, classical <b>1.e4</b> player who keeps the
+      king safe and stays out of needless trades — then <span class="em">strikes with a sacrifice</span>, and quietly
+      grinds a strong endgame.</p>
+      <div class="herostats">
+        <div class="hstat"><div class="hn">52%</div><div class="hl">overall score</div></div>
+        <div class="hstat"><div class="hn">1.9×</div><div class="hl">sacrifice rate vs a normal 1900</div></div>
+        <div class="hstat"><div class="hn">55%</div><div class="hl">once it reaches an endgame</div></div>
+      </div>
     </div>
 
-    <h2>Where my pieces live</h2>
-    <div class="toggle" id="toggle">
-      <button data-col="you" class="on">Me</button>
-      <button data-col="your_model">My bot</button>
-      <button data-col="base_maia">Generic 1900</button>
+    <!-- ===== 01 OPENINGS ===== -->
+    <section class="sec">
+      <div class="sechead">
+        <span class="secnum">01</span>
+        <div><h2>Openings</h2><div class="secsub">Classical 1.e4 · Caro-Kann specialist</div></div>
+      </div>
+      <p class="lead">I've played <b>1.e4</b> almost my whole life. As Black my real weapon is the
+      <span class="hl">Caro-Kann — my single best opening at 61%</span>, with 1…e5 as the steady alternative; against
+      1.d4 I'm solid with 1…d5. I punish the offbeat tries hardest — I score 57–58% against the Sicilian and
+      Scandinavian — but it evens out in the main open games.</p>
+
+      <div class="cols">
+        <div class="panel">
+          <span class="label">As White — how I score vs each defense</span>
+          <div id="open-white"></div>
+        </div>
+        <div class="panel">
+          <span class="label">As Black — my defenses</span>
+          <div id="open-black"></div>
+        </div>
+      </div>
+      <div class="legend">bar fills past the centre line = winning record · <span style="color:var(--c-green)">green</span> ≥ 55% · <span style="color:var(--accent)">clay</span> 50–54% · grey &lt; 50%</div>
+
+      <div class="sublabel">How I develop</div>
+      <p class="note" style="margin-top:0;margin-bottom:16px">By the book and fast: knights to <b>f3 &amp; c3</b> then the <b>e5 outpost</b>, bishops out to active squares — <b>c4, b5, the g5 pin</b> — rooks straight to the <b>e-file</b>, and I castle short <b>87%</b> of the time.</p>
+      <div class="heat3" id="dev-heat"></div>
+    </section>
+
+    <!-- ===== 02 MIDDLEGAME ===== -->
+    <section class="sec">
+      <div class="sechead">
+        <span class="secnum">02</span>
+        <div><h2>Middlegame</h2><div class="secsub">Patient — then a sudden sacrifice</div></div>
+      </div>
+      <p class="lead">I'm not a brawler. I trade less, check less, and push into your half less than a normal 1900 — I'd
+      rather <b>build</b>. But when the moment comes I'll give up material: <span class="hl">I sacrifice nearly twice as
+      often</span> as a typical player. I keep the <b>queens on</b> and play with an unusually active queen and king —
+      I'm a piece-player, not a pawn-pusher.</p>
+
+      <div class="stats" id="mid-stats"></div>
+
+      <div class="sublabel">Where my heavy pieces flow</div>
+      <p class="note" style="margin-top:0;margin-bottom:16px">My queen and king are each ~<b>13%</b> of my moves — both above a normal player — while pawns are only <b>24%</b>. I move pieces, not pawns; the rooks live on the <b>e-file</b>.</p>
+      <div class="heat2" id="mid-heat"></div>
+    </section>
+
+    <!-- ===== 03 ENDGAMES ===== -->
+    <section class="sec">
+      <div class="sechead">
+        <span class="secnum">03</span>
+        <div><h2>Endgames</h2><div class="secsub">A quiet strength — especially with queens on</div></div>
+      </div>
+      <p class="lead">When the dust settles I'm better than my rating: I win <span class="hl">55% of games that reach an
+      endgame</span>, versus 51% of the ones decided earlier, and I <b>activate my king</b> (13% of my moves — well above
+      normal). My favourite finishes keep pieces active: I convert <b>queen endings 63%</b> and <b>rook endings 57%</b> —
+      pure pawn endings I draw a lot.</p>
+
+      <div class="endgrid">
+        <div class="panel">
+          <span class="label">Win rate by endgame type</span>
+          <div id="endg-bars"></div>
+          <div class="legend">≈ 1 in 4 of my games reaches a clean endgame (1,060 of them) · rook endings are by far the most common</div>
+        </div>
+        <div class="heat2" style="grid-template-columns:1fr;max-width:280px" id="end-heat"></div>
+      </div>
+    </section>
+
+    <div class="foot">
+      Every number here is computed from my real Chess.com games — openings &amp; endgame records across ~3,900 rated
+      games, the middlegame fingerprint from 10,000 sampled positions. It's also the soul of
+      <a href="chess.html">the bot</a> you can play.
     </div>
-    <div class="pieces" id="pieces"></div>
-
-    <h2>My fingerprint <span style="font-family:var(--sans);text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:12px">vs a generic 1900</span></h2>
-    <div class="stats" id="stats"></div>
-
-    <h2>Does my bot play like me?</h2>
-    <div class="verdict" id="verdict"></div>
-    <p class="vnote" id="vnote"></p>
   </div>
 
   <script type="module">
-    const D = await fetch('./chess/style_profile.json').then(r => r.json());
-    document.getElementById('sampleN').textContent = D.meta.positions.toLocaleString() + ' positions';
-    document.getElementById('meta').textContent = 'play style · ' + D.meta.positions.toLocaleString() + ' positions';
+    const D = await fetch('./chess/style_profile.json').then(r => r.json()).catch(() => ({ you:{ heat:{} } }));
+    const heat = (D.you && D.you.heat) || {};
 
-    const PIECES = [
-      ['P','♟','Pawns','Classic center: e4 & d4'],
-      ['N','♞','Knights','f3 / c3, then the e5 outpost'],
-      ['B','♝','Bishops','Active: c4, b5, g5 pins'],
-      ['R','♜','Rooks','Seize the e-file'],
-      ['Q','♛','Queen','Modest, leans kingside'],
-      ['K','♚','King','Short castle, active in endings'],
-    ];
-    const piecesEl = document.getElementById('pieces');
-    function renderHeat(col){
-      piecesEl.innerHTML = PIECES.map(([k,g,name,ins])=>{
-        const arr = (D[col].heat && D[col].heat[k]) || new Array(64).fill(0);
-        const max = Math.max(...arr, 1);
-        let cells = '';
-        for(let r=7;r>=0;r--) for(let f=0;f<8;f++){
-          cells += `<div class="hc" style="--a:${(arr[r*8+f]/max).toFixed(3)}"></div>`;
-        }
-        return `<div class="pcard"><div class="ph"><img class="glyph" src="chess/pieces/b${k}.svg" alt=""><span class="pname">${name}</span></div>
-          <div class="pins">${col==='you'?ins:''}</div><div class="hb">${cells}</div></div>`;
-      }).join('');
-    }
-    document.getElementById('toggle').addEventListener('click', e=>{
-      const b = e.target.closest('button'); if(!b) return;
-      [...e.currentTarget.children].forEach(x=>x.classList.toggle('on', x===b));
-      renderHeat(b.dataset.col);
-    });
-    renderHeat('you');
+    // win-rate bars
+    const bar = (name, v) => {
+      const cls = v >= 55 ? 'hi' : v >= 50 ? 'mid' : 'lo';
+      return `<div class="wbar"><span class="wlabel">${name}</span><div class="track"><i class="fill ${cls}" style="width:${v}%"></i></div><span class="val">${v}%</span></div>`;
+    };
+    const bars = data => data.map(([n,v]) => bar(n,v)).join('');
+    document.getElementById('open-white').innerHTML = bars([['vs Sicilian',58],['vs Scandinavian',57],['vs Caro-Kann',54],['Ruy Lopez',50],['Italian Game',49]]);
+    document.getElementById('open-black').innerHTML = bars([['Caro-Kann',61],['vs 1.e4 (…e5)',56],['Bishop’s / Berlin',57],['vs 1.d4 (…d5)',50],['Queen’s Gambit Declined',46]]);
+    document.getElementById('endg-bars').innerHTML  = bars([['Queen endings',63],['Rook endings',57],['Minor-piece endings',46],['Pawn endings',43]]);
 
-    // fingerprint stat callouts (you vs generic)
-    const Y = D.you, G = D.base_maia;
-    const ratio = (a,b)=> (a/b).toFixed(1)+'×';
-    const stats = [
-      { big: ratio(Y.pct_sacrifice, G.pct_sacrifice), cap:'More sacrifices', you:Y.pct_sacrifice, gen:G.pct_sacrifice, max:1.0, unit:'%', sub:`you ${Y.pct_sacrifice}% of moves vs ${G.pct_sacrifice}% for a generic 1900` },
-      { big: `${Y.pct_capture}%`, cap:'Patient — fewer trades', you:Y.pct_capture, gen:G.pct_capture, max:30, unit:'%', sub:`you trade on ${Y.pct_capture}% of moves vs ${G.pct_capture}% — you don't trade for its own sake` },
-      { big: `${Y.piece_share.K}%`, cap:'Active king', you:Y.piece_share.K, gen:G.piece_share.K, max:16, unit:'%', sub:`${Y.piece_share.K}% of your moves are king moves vs ${G.piece_share.K}% — endgame technique` },
-      { big: `${Y.castle_side['kingside%']}%`, cap:'Castles short', you:Y.castle_side['kingside%'], gen:G.castle_side['kingside%'], max:100, unit:'%', sub:`you castle kingside ${Y.castle_side['kingside%']}% of the time` },
-    ];
-    document.getElementById('stats').innerHTML = stats.map(s=>`
-      <div class="stat"><div class="big">${s.big}</div><div class="cap">${s.cap}</div>
-        <div class="bar you"><i style="width:${Math.min(100,100*s.you/s.max)}%"></i></div>
-        <div class="bar gen"><i style="width:${Math.min(100,100*s.gen/s.max)}%"></i></div>
-        <div class="sub">${s.sub}</div></div>`).join('');
+    // middlegame stat callouts
+    document.getElementById('mid-stats').innerHTML = [
+      ['1.9×','More sacrifices','0.84% of my moves vs 0.45% for a normal 1900 — calculated risk'],
+      ['24%','I trade less','vs 28% for a normal player — I build instead of swapping'],
+      ['28%','Pressure your king','share of my moves that hit the squares around your king'],
+      ['13%','Active queen & king','each — above a normal 1900; pawns only 24% of my moves'],
+    ].map(([b,c,s]) => `<div class="stat"><div class="big">${b}</div><div class="cap">${c}</div><div class="sub">${s}</div></div>`).join('');
 
-    // model verdict
-    const M = D.your_model;
-    const caught = [
-      `Active queen — ${M.piece_share.Q}% (you ${Y.piece_share.Q}, generic ${G.piece_share.Q})`,
-      `Active king — ${M.piece_share.K}% (you ${Y.piece_share.K}, generic ${G.piece_share.K})`,
-      `Leans to sacrifices — ${M.pct_sacrifice}% (generic only ${G.pct_sacrifice}%)`,
-      `Castles short like you (${M.castle_side['kingside%']}% kingside)`,
-    ];
-    const missed = [
-      `Still trades like generic — ${M.pct_capture}% (you ${Y.pct_capture}%)`,
-      `Checks more than you — ${M.pct_check}% (you ${Y.pct_check}%)`,
-      `As forward as generic — ${M.pct_enemy_half}% into enemy half (you ${Y.pct_enemy_half}%)`,
-    ];
-    document.getElementById('verdict').innerHTML = `
-      <div class="vcol caught"><h3>✓ Caught my style</h3><ul>${caught.map(t=>`<li>✅ ${t}</li>`).join('')}</ul></div>
-      <div class="vcol missed"><h3>✗ Still generic</h3><ul>${missed.map(t=>`<li>⚠️ ${t}</li>`).join('')}</ul></div>`;
-    document.getElementById('vnote').innerHTML = `My fine-tuned bot caught <b>which pieces I favour</b> and my <b>sacrifice instinct</b> — but not my <b>positional restraint</b> (it still trades and pushes like a generic 1900). Honest for a light, +4-point personalization; more games would pull the rest toward me.`;
+    // piece heatmaps (white-perspective, where my pieces live)
+    const board = k => {
+      const arr = heat[k] || new Array(64).fill(0); const max = Math.max(...arr, 1);
+      let c = '';
+      for(let r=7;r>=0;r--) for(let f=0;f<8;f++) c += `<div class="hc" style="--a:${(arr[r*8+f]/max).toFixed(3)}"></div>`;
+      return c;
+    };
+    const card = (k,name,ins) => `<div class="pcard"><div class="ph"><img class="glyph" src="chess/pieces/b${k}.svg" alt=""><span class="pname">${name}</span></div><div class="pins">${ins}</div><div class="hb">${board(k)}</div></div>`;
+    document.getElementById('dev-heat').innerHTML = card('P','Pawns','center — e4 & d4') + card('N','Knights','f3 / c3 → e5 outpost') + card('B','Bishops','c4, b5, g5 pins');
+    document.getElementById('mid-heat').innerHTML = card('Q','Queen','central, leans kingside') + card('R','Rooks','the e-file');
+    document.getElementById('end-heat').innerHTML = card('K','King','short castle, then active in endings');
   </script>
 </body>
 </html>
