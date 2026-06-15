@@ -1,13 +1,14 @@
 // Maia in-browser brain.
 //   model:    official Maia 1900 (CSSLab / U-Toronto), Lc0 net converted to ONNX.
 //   encoding: Lc0 112-plane input + 1858 policy map (ports of hunterchen7/play-lc0).
-//   runtime:  onnxruntime-web (WASM, single-thread → no COOP/COEP headers required).
+//   runtime:  onnxruntime-web (WASM, single-thread → no COOP/COEP headers required),
+//             self-hosted in ./ort/ so it loads on any network (no third-party CDN).
 // One forward pass per move (no search) = how Maia is meant to run.
-import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.1/dist/ort.wasm.min.mjs';
+import * as ort from './ort/ort.wasm.min.mjs';
 import { encodeFenHistory } from './encoding.js';
 import { decodePolicyOutput } from './decoding.js';
 
-ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.1/dist/';
+ort.env.wasm.wasmPaths = new URL('./ort/', import.meta.url).href;  // resolved from THIS module, not the page
 ort.env.wasm.numThreads = 1;
 
 let session = null;

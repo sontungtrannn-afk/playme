@@ -150,6 +150,7 @@
         <div class="panel play-only">
           <span class="label">Status</span>
           <div class="status" id="status">White to move</div>
+          <div class="brainstate" id="brainstate"></div>
         </div>
         <div class="panel play-only">
           <span class="label">Material</span>
@@ -174,9 +175,20 @@
     // of his Chess.com games. The bot plays a weighted-random pick of HIS move when in book.
     const BOOK = await fetch('./chess/book.json').then(r => r.json()).catch(() => ({}));
     const BOOK_N = Object.keys(BOOK).length;
-    let MAIA_OK = false;             // Maia 1900 loaded? (async + optional — page works without it)
+    let maiaState = 'loading';       // 'loading' | 'ready' | 'failed' — his trained brain (async, optional)
+    let waitingForMaia = false;      // true while a bot move is blocked on the model finishing its load
     let pickMove = null;             // assigned once maia.js + onnxruntime-web finish loading
     const sleep = ms => new Promise(r => setTimeout(r, ms));
+    // Off-book, the bot wants Maia (his trained brain), not the basic practice engine. On a cold
+    // load the model is still downloading, so WAIT for it instead of playing a weak move. Resolves
+    // the moment Maia is ready OR has definitively failed (or we hit the timeout).
+    const waitForMaia = (timeoutMs = 20000) => new Promise(resolve => {
+      if(maiaState !== 'loading') return resolve();
+      const t0 = Date.now();
+      const iv = setInterval(() => {
+        if(maiaState !== 'loading' || Date.now() - t0 > timeoutMs){ clearInterval(iv); resolve(); }
+      }, 120);
+    });
 
     // filled glyphs for both colours (recoloured via CSS); ︎ forces text (not emoji) rendering
     const GLYPH = { k:'♚︎', q:'♛︎', r:'♜︎', b:'♝︎', n:'♞︎', p:'♟︎' };
@@ -191,7 +203,7 @@
     let lastMove = null;      // { from, to }
     let botThinking = false;
     let gameOver = false;
-    let lastBotSource = null;   // 'book' | 'engine'
+    let lastBotSource = null;   // 'book' | 'maia' | 'engine'
     let phase = 'setup';        // 'setup' | 'playing'
     let pendingAnim = null;     // { from, to } — slide the just-moved piece into place
 
@@ -370,7 +382,16 @@
       const bm = bookMove();                                    // layer 1: his repertoire
       if(bm){ try{ played = game.move(bm); source = 'book'; }catch{ played = null; } }
 
-      if(!played && MAIA_OK && pickMove){                       // layer 2: Maia 1900 (human-like)
+      // Off-book this should be Maia, not the practice engine. If the model is still loading
+      // (cold device / slow network), WAIT for it — the weak fallback is only for when Maia
+      // genuinely can't load. The opening book has bought most of the download time already.
+      if(!played && maiaState === 'loading'){
+        waitingForMaia = true; updateBrainState();
+        await waitForMaia();
+        waitingForMaia = false;
+      }
+
+      if(!played && maiaState === 'ready' && pickMove){         // layer 2: his Maia (human-like)
         try{
           const fenHistory = game.history({ verbose:true }).map(m => m.before).concat([game.fen()]);
           const legal = game.moves({ verbose:true }).map(m => m.from + m.to + (m.promotion || ''));
@@ -450,12 +471,17 @@
     function updateBrainState(){
       const el = document.getElementById('brainstate');
       if(!el) return;
+      if(waitingForMaia){ el.innerHTML = '<span class="dot maia"></span> loading the real bot…'; return; }
       if(lastBotSource === 'book')        el.innerHTML = '<span class="dot book"></span> playing my repertoire';
       else if(lastBotSource === 'maia')   el.innerHTML = '<span class="dot maia"></span> my Maia · trained on my games';
-      else if(lastBotSource === 'engine') el.innerHTML = '<span class="dot eng"></span> off-book · practice engine';
-      else el.innerHTML = MAIA_OK
+      else if(lastBotSource === 'engine') el.innerHTML = maiaState === 'failed'
+        ? '<span class="dot eng"></span> couldn’t load my Maia · basic fallback'
+        : '<span class="dot eng"></span> off-book · practice engine';
+      else el.innerHTML = maiaState === 'ready'
         ? `<span class="dot maia"></span> ${BOOK_N.toLocaleString()} positions + my Maia ready`
-        : `loading my Maia… (${BOOK_N.toLocaleString()} book positions ready)`;
+        : maiaState === 'failed'
+          ? `<span class="dot eng"></span> couldn’t load my Maia (${BOOK_N.toLocaleString()} book positions ready)`
+          : `loading my Maia… (${BOOK_N.toLocaleString()} book positions ready)`;
     }
 
     function newGame(color){
@@ -541,9 +567,13 @@
         const maia = await import('./chess/maia/maia.js');
         await maia.initMaia('./chess/son-tung-rapid.onnx');
         pickMove = maia.pickMove;
-        MAIA_OK = true;
+        maiaState = 'ready';
         updateBrainState();
-      } catch (e){ console.warn('Maia unavailable (off-book uses practice engine):', e); }
+      } catch (e){
+        maiaState = 'failed';
+        console.warn('Maia unavailable (off-book uses practice engine):', e);
+        updateBrainState();
+      }
     })();
   </script>
 </body>
