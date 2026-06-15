@@ -70,6 +70,8 @@
 
   /* ============ CONFIG COLUMN ============ */
   .config{display:flex;flex-direction:column;gap:18px}
+  .config[data-phase="setup"] .play-only{display:none}
+  .config[data-phase="playing"] .setup-only{display:none}
   .panel{background:var(--tile);border:1px solid var(--line);border-radius:14px;padding:16px}
   .panel .label{display:block;margin-bottom:10px}
   .seg{display:flex;border:1px solid var(--line-2);border-radius:9px;overflow:hidden}
@@ -118,42 +120,28 @@
       </div>
 
       <!-- RIGHT: game configuration -->
-      <aside class="config">
-        <div class="panel">
+      <aside class="config" id="config" data-phase="setup">
+        <!-- SETUP -->
+        <div class="panel setup-only">
           <span class="label">You play</span>
           <div class="seg" id="colorSeg">
             <button data-color="w" class="on">White</button>
             <button data-color="b">Black</button>
           </div>
         </div>
+        <button class="btn primary setup-only" id="start">Start</button>
 
-        <div class="panel">
-          <span class="label">Opponent brain</span>
-          <select id="brain">
-            <option value="book">My book + my own Maia</option>
-            <optgroup label="other strengths (later)" disabled>
-              <option>Base Maia 1100</option>
-              <option>Base Maia 1500</option>
-              <option>Base Maia 1900</option>
-            </optgroup>
-          </select>
-          <div class="hint">In book → my real moves. Off-book → my own Maia, a neural net fine-tuned on 1,346 of my rapid games.</div>
-        </div>
-
-        <div class="panel">
-          <span class="label">Status</span>
-          <div class="status" id="status">White to move</div>
-          <div class="brainstate" id="brainstate"></div>
-        </div>
-
-        <div class="panel">
+        <!-- PLAYING -->
+        <div class="panel play-only">
           <span class="label">Moves</span>
           <div class="moves" id="moves"></div>
         </div>
-
-        <div class="panel">
+        <div class="panel play-only">
+          <span class="label">Status</span>
+          <div class="status" id="status">White to move</div>
+        </div>
+        <div class="panel play-only">
           <div class="btnrow">
-            <button class="btn primary" id="newGame">New game</button>
             <button class="btn" id="undo">Undo move</button>
             <button class="btn" id="resign">Resign</button>
             <button class="btn" id="flip">Flip board</button>
@@ -188,6 +176,8 @@
     let botThinking = false;
     let gameOver = false;
     let lastBotSource = null;   // 'book' | 'engine'
+    let phase = 'setup';        // 'setup' | 'playing'
+    let pendingAnim = null;     // { from, to } — slide the just-moved piece into place
 
     const boardEl  = document.getElementById('board');
     const statusEl = document.getElementById('status');
@@ -269,6 +259,21 @@
 
         boardEl.appendChild(div);
       }));
+
+      if(pendingAnim){                                   // slide the just-moved piece from its origin
+        const toSq   = boardEl.querySelector(`[data-square="${pendingAnim.to}"]`);
+        const fromSq = boardEl.querySelector(`[data-square="${pendingAnim.from}"]`);
+        const pc = toSq && toSq.querySelector('.piece');
+        if(pc && fromSq && toSq){
+          const a = fromSq.getBoundingClientRect(), z = toSq.getBoundingClientRect();
+          pc.style.transition = 'none';
+          pc.style.transform  = `translate(${a.left - z.left}px, ${a.top - z.top}px)`;
+          pc.getBoundingClientRect();                     // force reflow so the start position paints
+          pc.style.transition = 'transform .2s ease';
+          pc.style.transform  = 'translate(0, 0)';
+        }
+        pendingAnim = null;
+      }
       refreshUndo();
     }
 
@@ -280,7 +285,7 @@
     function clearSelection(){ selected=null; legalTargets=[]; }
 
     function onSquareClick(sq){
-      if(gameOver || botThinking || game.turn()!==humanColor) return;
+      if(phase !== 'playing' || gameOver || botThinking || game.turn()!==humanColor) return;
       const piece = game.get(sq);
       if(selected){
         const candidates = legalTargets.filter(m => m.to === sq);
@@ -301,6 +306,7 @@
     function applyMove(moveObj){
       const m = game.move(moveObj);
       lastMove = { from:m.from, to:m.to };
+      pendingAnim = { from:m.from, to:m.to };
       updateMoves();
     }
 
@@ -333,6 +339,7 @@
       if(!played){ played = game.move(chooseBotMove()); source = 'engine'; }   // layer 3: last resort
 
       lastMove = { from:played.from, to:played.to };
+      pendingAnim = { from:played.from, to:played.to };
       lastBotSource = source;
       botThinking = false;
       updateMoves(); render();
@@ -350,6 +357,7 @@
       else if(game.isInsufficientMaterial()) msg = 'Draw · insufficient material';
       else if(game.isDraw())            msg = 'Draw · 50-move rule';
       setStatus(msg, true);
+      refreshUndo();
       return true;
     }
 
@@ -391,14 +399,26 @@
       orientation = color;
       game.reset();
       clearSelection();
-      lastMove = null; gameOver = false; botThinking = false; lastBotSource = null;
+      lastMove = null; pendingAnim = null; gameOver = false; botThinking = false; lastBotSource = null;
       render(); updateMoves(); updateStatus(); updateBrainState();
       if(humanColor==='b') maybeBotMove(); // bot is White → it opens
     }
 
+    function applyPhase(){ document.getElementById('config').dataset.phase = phase; }
+
+    function toSetup(){                  // back to the start screen (Resign / New game)
+      phase = 'setup';
+      game.reset(); clearSelection();
+      lastMove = null; pendingAnim = null; gameOver = false; botThinking = false; lastBotSource = null;
+      orientation = humanColor;
+      applyPhase(); render(); updateMoves(); updateStatus();
+    }
+
     function refreshUndo(){
-      const btn = document.getElementById('undo');
-      if(btn) btn.disabled = botThinking || !game.history({ verbose:true }).some(m => m.color === humanColor);
+      const undoBtn = document.getElementById('undo');
+      if(undoBtn) undoBtn.disabled = botThinking || !game.history({ verbose:true }).some(m => m.color === humanColor);
+      const resignBtn = document.getElementById('resign');
+      if(resignBtn) resignBtn.textContent = gameOver ? 'New game' : 'Resign';
     }
 
     function undoMove(){               // take back your last move AND the bot's reply
@@ -422,21 +442,21 @@
     document.getElementById('colorSeg').addEventListener('click', e => {
       const btn = e.target.closest('button'); if(!btn) return;
       [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b===btn));
-      newGame(btn.dataset.color);
+      humanColor = btn.dataset.color; orientation = humanColor;   // preview the board from your side
+      game.reset(); clearSelection(); lastMove = null; render();
     });
-    document.getElementById('newGame').addEventListener('click', () => newGame(humanColor));
+    document.getElementById('start').addEventListener('click', () => {
+      phase = 'playing'; applyPhase(); newGame(humanColor);
+    });
     document.getElementById('undo').addEventListener('click', undoMove);
-    document.getElementById('resign').addEventListener('click', () => {
-      if(gameOver) return;
-      gameOver = true;
-      setStatus((humanColor==='w'?'White':'Black') + ' resigned · ' + (humanColor==='w'?'Black':'White') + ' wins', true);
-    });
+    document.getElementById('resign').addEventListener('click', toSetup);   // "Resign" / "New game" → start screen
     document.getElementById('flip').addEventListener('click', () => {
       orientation = orientation==='w' ? 'b' : 'w'; render();
     });
 
     // ── boot ──
-    newGame('w');
+    applyPhase();                       // start on the setup screen
+    render(); updateMoves(); updateStatus();
 
     // Load my personalized Maia (fine-tuned on my rapid games) in the background. If it (or
     // onnxruntime-web) fails, the page still works — off-book falls back to the practice engine.
