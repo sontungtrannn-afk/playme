@@ -48,7 +48,11 @@
   @media(max-width:840px){.layout{grid-template-columns:1fr}}
 
   /* ============ BOARD ============ */
-  .board-area{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .board-area{display:flex;flex-direction:column;align-items:center;gap:14px;position:relative}
+  .promo{position:absolute;z-index:10;background:rgba(40,30,20,.34);border-radius:10px;overflow:hidden}
+  .promo-pc{position:absolute;width:12.5%;height:12.5%;padding:0;border:0;cursor:pointer;background:var(--tile);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px -6px rgba(0,0,0,.5);transition:background .12s}
+  .promo-pc:hover{background:var(--accent)}
+  .promo-pc img{width:84%;height:84%;pointer-events:none}
   .board{container-type:inline-size;width:100%;max-width:560px;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:10px;overflow:hidden;border:1px solid var(--line-2);box-shadow:0 24px 54px -32px rgba(40,30,20,.55);user-select:none}
   .sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:default}
   .sq.light{background:var(--sq-light)}
@@ -96,6 +100,12 @@
   .moves .mv{display:grid;grid-template-columns:30px 1fr 1fr;gap:4px}
   .moves .mv .n{color:var(--muted)}
   .moves:empty::after{content:"No moves yet";color:var(--muted)}
+  .captured{display:flex;align-items:center;gap:2px;min-height:24px;flex-wrap:wrap}
+  .captured+.captured{margin-top:8px}
+  .capm{font-family:var(--mono);font-size:10px;color:var(--muted);width:36px;text-transform:uppercase;flex:none}
+  .capi{width:18px;height:18px;object-fit:contain}
+  .caplead{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent-ink);margin-left:6px}
+  .capnone{font-family:var(--mono);font-size:10px;color:var(--line-2)}
 </style>
 </head>
 <body>
@@ -117,6 +127,7 @@
       <!-- MAIN: board -->
       <div class="board-area">
         <div id="board" class="board" aria-label="Chess board"></div>
+        <div id="promo" class="promo" hidden></div>
       </div>
 
       <!-- RIGHT: game configuration -->
@@ -139,6 +150,11 @@
         <div class="panel play-only">
           <span class="label">Status</span>
           <div class="status" id="status">White to move</div>
+        </div>
+        <div class="panel play-only">
+          <span class="label">Material</span>
+          <div class="captured" id="cap-you"></div>
+          <div class="captured" id="cap-bot"></div>
         </div>
         <div class="panel play-only">
           <div class="btnrow">
@@ -182,6 +198,8 @@
     const boardEl  = document.getElementById('board');
     const statusEl = document.getElementById('status');
     const movesEl  = document.getElementById('moves');
+    const promoEl  = document.getElementById('promo');
+    let pendingPromo = null;    // { from, to } awaiting the promotion-piece choice
 
     // ─────────────────────────────────────────────────────────────
     // The bot's "brain". STAGE 0 = placeholder. The whole point of this
@@ -225,6 +243,7 @@
     }
 
     function render(){
+      if(pendingPromo) hidePromo();
       boardEl.innerHTML = '';
       const b = game.board();
       const rankOrder = orientation==='w' ? [0,1,2,3,4,5,6,7] : [7,6,5,4,3,2,1,0];
@@ -275,6 +294,7 @@
         pendingAnim = null;
       }
       refreshUndo();
+      updateCaptured();
     }
 
     function selectSquare(sq){
@@ -284,14 +304,38 @@
     }
     function clearSelection(){ selected=null; legalTargets=[]; }
 
+    function displayedPos(sqName){          // square name → on-screen {col,row} for the current orientation
+      const f = FILES.indexOf(sqName[0]);
+      const r = 8 - parseInt(sqName[1], 10);
+      const ord = orientation==='w' ? [0,1,2,3,4,5,6,7] : [7,6,5,4,3,2,1,0];
+      return { col: ord.indexOf(f), row: ord.indexOf(r) };
+    }
+    function showPromo(from, to, color){    // overlay the 4 promotion choices on the board
+      pendingPromo = { from, to };
+      promoEl.style.left = boardEl.offsetLeft + 'px';
+      promoEl.style.top = boardEl.offsetTop + 'px';
+      promoEl.style.width = boardEl.offsetWidth + 'px';
+      promoEl.style.height = boardEl.offsetHeight + 'px';
+      const { col, row } = displayedPos(to);
+      const dir = row < 4 ? 1 : -1;         // strip drops toward the board centre
+      promoEl.innerHTML = ['q','r','b','n'].map((pc,i) =>
+        `<button class="promo-pc" data-pc="${pc}" style="left:${col*12.5}%;top:${(row+dir*i)*12.5}%"><img src="chess/pieces/${color}${pc.toUpperCase()}.svg" alt="${pc}"></button>`
+      ).join('');
+      promoEl.hidden = false;
+    }
+    function hidePromo(){ promoEl.hidden = true; promoEl.innerHTML = ''; pendingPromo = null; }
+
     function onSquareClick(sq){
-      if(phase !== 'playing' || gameOver || botThinking || game.turn()!==humanColor) return;
+      if(pendingPromo || phase !== 'playing' || gameOver || botThinking || game.turn()!==humanColor) return;
       const piece = game.get(sq);
       if(selected){
         const candidates = legalTargets.filter(m => m.to === sq);
         if(candidates.length){
-          const mv = candidates.find(m => m.promotion==='q') || candidates[0]; // auto-queen for now
-          applyMove({ from:selected, to:sq, promotion: mv.promotion });
+          if(candidates[0].promotion){                 // pawn reaching the last rank → choose a piece
+            showPromo(selected, sq, humanColor);
+            return;
+          }
+          applyMove({ from:selected, to:sq });
           clearSelection();
           afterHumanMove();
           return;
@@ -383,6 +427,26 @@
       movesEl.scrollTop = movesEl.scrollHeight;
     }
 
+    function updateCaptured(){              // captured pieces + material lead, from your perspective
+      const START = { p:8, n:2, b:2, r:2, q:1 }, VALS = { p:1, n:3, b:3, r:5, q:9 };
+      const cur = { w:{p:0,n:0,b:0,r:0,q:0}, b:{p:0,n:0,b:0,r:0,q:0} }, mat = { w:0, b:0 };
+      for(const row of game.board()) for(const cell of row){
+        if(!cell || cell.type==='k') continue;
+        cur[cell.color][cell.type]++; mat[cell.color] += VALS[cell.type];
+      }
+      const lost = c => { const o={}; for(const t of ['q','r','b','n','p']){ const n=START[t]-cur[c][t]; if(n>0) o[t]=n; } return o; };
+      const capturedBy = { w: lost('b'), b: lost('w') };    // pieces each colour has removed
+      const opp = humanColor==='w' ? 'b' : 'w';
+      const icons = (caps, color) => {
+        let h=''; for(const t of ['q','r','b','n','p']) for(let i=0;i<(caps[t]||0);i++) h += `<img class="capi" src="chess/pieces/${color}${t.toUpperCase()}.svg" alt="">`;
+        return h || '<span class="capnone">—</span>';
+      };
+      const lead = mat[humanColor] - mat[opp];              // + = you're ahead
+      const youEl = document.getElementById('cap-you'), botEl = document.getElementById('cap-bot');
+      if(youEl) youEl.innerHTML = `<span class="capm">You</span>${icons(capturedBy[humanColor], opp)}${lead>0?`<span class="caplead">+${lead}</span>`:''}`;
+      if(botEl) botEl.innerHTML = `<span class="capm">Bot</span>${icons(capturedBy[opp], humanColor)}${lead<0?`<span class="caplead">+${-lead}</span>`:''}`;
+    }
+
     function updateBrainState(){
       const el = document.getElementById('brainstate');
       if(!el) return;
@@ -438,6 +502,18 @@
     boardEl.addEventListener('click', e => {
       const cell = e.target.closest('.sq');
       if(cell) onSquareClick(cell.dataset.square);
+    });
+    promoEl.addEventListener('click', e => {
+      const btn = e.target.closest('.promo-pc');
+      if(btn && pendingPromo){
+        const { from, to } = pendingPromo; const pc = btn.dataset.pc;
+        hidePromo();
+        applyMove({ from, to, promotion: pc });
+        clearSelection();
+        afterHumanMove();
+      } else {                              // clicked the dim backdrop → cancel the move
+        hidePromo(); clearSelection(); render();
+      }
     });
     document.getElementById('colorSeg').addEventListener('click', e => {
       const btn = e.target.closest('button'); if(!btn) return;

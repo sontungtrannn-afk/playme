@@ -87,6 +87,18 @@
   .endgrid{display:grid;grid-template-columns:1fr 280px;gap:28px;align-items:start}
   @media(max-width:720px){.endgrid{grid-template-columns:1fr}}
 
+  /* mini opening boards */
+  .ominis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:30px}
+  @media(max-width:720px){.ominis{grid-template-columns:repeat(2,1fr)}}
+  .obcard{background:var(--tile);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .omini{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;border-radius:7px;overflow:hidden;border:1px solid var(--line-2)}
+  .oc{display:flex;align-items:center;justify-content:center}
+  .oc.l{background:#EDE4D2} .oc.d{background:#B9A47E}
+  .oc img{width:84%;height:84%}
+  .oname{font-weight:600;font-size:13px;margin-top:10px}
+  .omoves{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4}
+  .omoves b{color:var(--accent-ink);font-weight:600}
+
   .foot{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);line-height:1.6}
   .foot a{color:var(--accent-ink);font-weight:500}
 </style>
@@ -121,6 +133,9 @@
       <span class="hl">Caro-Kann — my single best opening at 61%</span>, with 1…e5 as the steady alternative; against
       1.d4 I'm solid with 1…d5. I punish the offbeat tries hardest — I score 57–58% against the Sicilian and
       Scandinavian — but it evens out in the main open games.</p>
+
+      <div class="sublabel" style="margin-top:0">My main openings</div>
+      <div class="ominis" id="ominis"></div>
 
       <div class="cols">
         <div class="panel">
@@ -218,6 +233,26 @@
     document.getElementById('dev-heat').innerHTML = card('P','Pawns','center — e4 & d4') + card('N','Knights','f3 / c3 → e5 outpost') + card('B','Bishops','c4, b5, g5 pins');
     document.getElementById('mid-heat').innerHTML = card('Q','Queen','central, leans kingside') + card('R','Rooks','the e-file');
     document.getElementById('end-heat').innerHTML = card('K','King','short castle, then active in endings');
+
+    // mini opening boards (FEN piece-placement → 8×8)
+    const OPENINGS = [
+      ['King’s Knight', '1.e4 e5 2.Nf3', 'rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R'],
+      ['Caro-Kann', '1.e4 c6 2.d4 d5 · <b>61% as Black</b>', 'rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR'],
+      ['Italian Game', '1.e4 e5 2.Nf3 Nc6 3.Bc4', 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R'],
+      ['Queen’s Pawn', '1.d4 d5 · solid', 'rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR'],
+    ];
+    function miniBoard(p){
+      const rows = p.split('/'); let cells = '';
+      rows.forEach((row, ri) => { let fi = 0;
+        for(const ch of row){
+          if(ch>='1' && ch<='8'){ for(let k=0;k<+ch;k++){ cells += `<div class="oc ${(ri+fi)%2?'d':'l'}"></div>`; fi++; } }
+          else { const col = ch===ch.toUpperCase()?'w':'b'; cells += `<div class="oc ${(ri+fi)%2?'d':'l'}"><img src="chess/pieces/${col}${ch.toUpperCase()}.svg" alt=""></div>`; fi++; }
+        }
+      });
+      return cells;
+    }
+    document.getElementById('ominis').innerHTML = OPENINGS.map(([name,moves,fen]) =>
+      `<div class="obcard"><div class="omini">${miniBoard(fen)}</div><div class="oname">${name}</div><div class="omoves">${moves}</div></div>`).join('');
   </script>
 </body>
 </html>
