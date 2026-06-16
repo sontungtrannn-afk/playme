@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maia load diagnostic</title>
+<style>
+  :root{
+    --bg:#F1EEE7; --tile:#FCFBF8; --ink:#1B1A17; --mut:#6b675f; --line:#E7E2D8;
+    --ok:#2f7d3a; --bad:#b5302a; --warn:#7a5e1e;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.5;padding:16px}
+  h1{font-size:16px;margin:0 0 4px}
+  .sub{color:var(--mut);font-size:12px;margin:0 0 16px}
+  .banner{padding:12px 14px;border-radius:10px;font-size:15px;font-weight:700;margin:0 0 16px;border:2px solid}
+  .banner.ok{background:#eaf3ea;border-color:var(--ok);color:var(--ok)}
+  .banner.bad{background:#f6e9e8;border-color:var(--bad);color:var(--bad)}
+  .banner.wait{background:#f3eee2;border-color:#caa44a;color:var(--warn)}
+  section{background:var(--tile);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 12px}
+  section h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 8px}
+  .row{display:flex;gap:8px;padding:3px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+  .row:first-of-type{border-top:0}
+  .k{color:var(--mut);min-width:130px}
+  .v{flex:1;min-width:160px;word-break:break-word}
+  .v.ok{color:var(--ok)} .v.bad{color:var(--bad);font-weight:700}
+  .err{white-space:pre-wrap;background:#f6e9e8;border:1px solid #e3c4c0;border-radius:8px;padding:8px;color:#7a2620;font-size:12px;margin-top:8px}
+  button{font-family:var(--mono);font-size:13px;padding:9px 13px;border-radius:8px;border:1px solid var(--line);background:var(--tile);color:var(--ink)}
+</style>
+</head>
+<body>
+  <h1>Maia load diagnostic</h1>
+  <p class="sub">Screenshot this whole page and send it back · play.itsjames.life</p>
+  <div class="banner wait" id="banner">Running checks…</div>
+  <section id="env"><h2>Device</h2></section>
+  <section id="caps"><h2>WebAssembly capabilities</h2></section>
+  <section id="load"><h2>Maia load test</h2>
+    <div class="row"><div class="k">status</div><div class="v" id="loadstatus">starting… (if this never changes, ES-module loading is blocked)</div></div>
+  </section>
+  <button id="copy">Copy report</button>
+
+  <script>
+    // Classic script: render device + capabilities synchronously. No downloads, never throws —
+    // so even if the module script below can't run, the most diagnostic info is already on screen.
+    function row(parent, k, v, cls){
+      var r = document.createElement('div'); r.className = 'row';
+      r.innerHTML = '<div class="k"></div><div class="v ' + (cls || '') + '"></div>';
+      r.children[0].textContent = k; r.children[1].textContent = v;
+      parent.appendChild(r); return r;
+    }
+    var ua = navigator.userAgent || '';
+    var env = document.getElementById('env');
+    row(env, 'userAgent', ua);
+    var iab = /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|; wv\)/i.test(ua);
+    var marks = ua.match(/(FBAN|FBAV|FB_IAB|MessengerForiOS)\/?[^;\s]*/g);
+    row(env, 'in-app browser', iab ? ('YES' + (marks ? ' — ' + marks.join(' ') : '')) : 'no (looks like a normal browser)', iab ? 'bad' : 'ok');
+    var iosm = ua.match(/OS (\d+)[_.](\d+)/);
+    if (iosm){
+      var maj = parseInt(iosm[1], 10), min = parseInt(iosm[2], 10);
+      var simdEra = (maj > 16) || (maj === 16 && min >= 4);
+      row(env, 'iOS version', iosm[1] + '.' + iosm[2] + (simdEra ? ' (new enough for WASM-SIMD)' : ' (older than 16.4 — no WASM-SIMD)'));
+    } else {
+      row(env, 'iOS version', '(not iOS / unknown)');
+    }
+    row(env, 'platform', navigator.platform || '?');
+    row(env, 'cores', String(navigator.hardwareConcurrency || '?'));
+    row(env, 'deviceMemory', (navigator.deviceMemory != null ? navigator.deviceMemory + ' GB' : '(not reported — normal on iPhone)'));
+    row(env, 'screen', screen.width + '×' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x');
+
+    var caps = document.getElementById('caps');
+    var hasWasm = (typeof WebAssembly === 'object' && typeof WebAssembly.validate === 'function');
+    row(caps, 'WebAssembly', hasWasm ? 'yes' : 'NO', hasWasm ? 'ok' : 'bad');
+    var simd = false;
+    try { simd = WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11])); } catch(e){}
+    row(caps, 'WASM SIMD', simd ? 'yes' : 'NO — the runtime is SIMD-only, so this would fail it', simd ? 'ok' : 'bad');
+    var sab = (typeof SharedArrayBuffer !== 'undefined');
+    row(caps, 'WASM threads', sab ? 'SharedArrayBuffer present' : 'no (fine — we run 1 thread)', sab ? 'ok' : '');
+    row(caps, 'crossOriginIsolated', String(!!window.crossOriginIsolated));
+    var mod = ('noModule' in HTMLScriptElement.prototype);
+    row(caps, 'ES modules', mod ? 'supported' : 'NOT supported', mod ? 'ok' : 'bad');
+
+    document.getElementById('copy').onclick = function(){
+      var t = document.body.innerText, btn = this;
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(function(){ btn.textContent = 'Copied ✓'; },
+                                              function(){ btn.textContent = 'Copy blocked — screenshot instead'; });
+      } else { btn.textContent = 'Copy unsupported — screenshot instead'; }
+    };
+  </script>
+
+  <script type="module">
+    // Module script: reproduce chess.html's EXACT Maia load path and capture the real error
+    // (chess.html only console.warn's it, which is invisible inside an in-app browser).
+    const loadSec = document.getElementById('load');
+    const ls = document.getElementById('loadstatus');
+    const banner = document.getElementById('banner');
+    const now = () => { try { return Math.round(performance.now()); } catch(e){ return 0; } };
+    function add(k, v, cls){
+      const r = document.createElement('div'); r.className = 'row';
+      r.innerHTML = '<div class="k"></div><div class="v ' + (cls || '') + '"></div>';
+      r.children[0].textContent = k; r.children[1].textContent = v;
+      loadSec.appendChild(r);
+    }
+    function errBox(e){
+      const d = document.createElement('div'); d.className = 'err';
+      const head = (e && e.name ? e.name + ': ' : '') + ((e && e.message) || String(e));
+      const stack = (e && e.stack) ? '\n\n' + String(e.stack).split('\n').slice(0, 6).join('\n') : '';
+      d.textContent = head + stack; loadSec.appendChild(d);
+    }
+    (async () => {
+      let ok = true;
+      ls.textContent = 'importing ./chess/maia/maia.js …';
+      let maia = null, t0 = now();
+      try { maia = await import('./chess/maia/maia.js'); add('1 · import maia.js', 'ok (' + (now() - t0) + 'ms)', 'ok'); }
+      catch(e){ ok = false; add('1 · import maia.js', 'FAILED', 'bad'); errBox(e); }
+
+      if (maia){
+        ls.textContent = 'loading model + building the WASM session …';
+        let t1 = now();
+        try { await maia.initMaia('./chess/son-tung-rapid.onnx'); add('2 · initMaia (model + ort session)', 'ok (' + (now() - t1) + 'ms)', 'ok'); }
+        catch(e){ ok = false; add('2 · initMaia (model + ort session)', 'FAILED', 'bad'); errBox(e); }
+      }
+
+      ls.textContent = ok ? 'all steps passed' : 'a step failed — see the red box above';
+      banner.className = 'banner ' + (ok ? 'ok' : 'bad');
+      banner.textContent = ok
+        ? '✅ Maia loads fine on this device'
+        : '❌ Maia failed to load — screenshot this page and send it back';
+    })();
+  </script>
+</body>
+</html>
